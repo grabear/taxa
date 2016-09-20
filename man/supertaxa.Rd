@@ -23,7 +23,7 @@ vector of unique values.}
 
 \item{na}{(\code{logical}) If \code{TRUE}, return \code{NA} where information is not available.}
 
-\item{...}{Used to pass the parameters to the R6 method of \code{\link{taxonomy}}}
+\item{...}{Used to pass the parameters to the S3 method of \code{\link{taxonomy}}}
 }
 \value{
 If \code{simplify = FALSE}, then a list of vectors are returned corresponding to the
@@ -34,10 +34,10 @@ If \code{simplify = FALSE}, then a list of vectors are returned corresponding to
 Return the taxon IDs or indexes of all supertaxa (i.e. all taxa the target taxa
 are a part of) in an object of type \code{\link{taxonomy}} or \code{\link{taxmap}}.
 \preformatted{
-obj$supertaxa(subset = NULL, recursive = TRUE,
-              simplify = FALSE, include_input = FALSE,
-              index = FALSE, na = FALSE)
-supertaxa(obj, ...)}
+obj$supertaxa(...)
+supertaxa(obj, subset = NULL, recursive = TRUE,
+          simplify = FALSE, include_input = FALSE,
+          index = FALSE, na = FALSE)}
 }
 \seealso{
 Other taxmap taxonomy functions: \code{\link{obs}},

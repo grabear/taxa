@@ -38,49 +38,8 @@ Taxonomy <- R6::R6Class(
       invisible(self)
     },
 
-    supertaxa = function(subset = NULL, recursive = TRUE, simplify = FALSE,
-                         include_input = FALSE, index = FALSE, na = FALSE) {
-      # Parse arguments
-      subset <- format_taxon_subset(names(self$taxa), subset)
-
-      # Get supertaxa
-      parent_index <- match(self$edge_list$from, self$edge_list$to) # precomputing makes it much faster
-      recursive_part <- function(taxon) {
-        supertaxon <- parent_index[taxon]
-        if (recursive) {
-          if (is.na(supertaxon)) {
-            output <- c(taxon, supertaxon)
-          } else {
-            output <- c(taxon, recursive_part(supertaxon))
-          }
-        } else {
-          output <- c(taxon, supertaxon)
-        }
-        return(unname(output))
-      }
-      output <- lapply(subset, recursive_part)
-
-      # Remove query taxa from output
-      if (! include_input) {
-        output <- lapply(output, `[`, -1)
-      }
-
-      # Remove NAs from output
-      if (! na) {
-        output <- lapply(output, function(x) x[!is.na(x)])
-      }
-
-      # Convert to taxon_ids
-      if (! index) {
-        output <- lapply(output, function(x) names(self$taxa)[x])
-      }
-
-      # Reduce dimensionality
-      if (simplify) {
-        output <- unique(unname(unlist(output)))
-      }
-
-      return(output)
+    supertaxa = function(...) {
+      supertaxa(self, ...)
     }
 
 
@@ -128,8 +87,49 @@ supertaxa.default <- function(obj, ...) {
 }
 
 #' @export
-supertaxa.Taxonomy <- function(obj, ...) {
-  obj$supertaxa(...)
+supertaxa.Taxonomy <- function(obj, subset = NULL, recursive = TRUE, simplify = FALSE,
+                               include_input = FALSE, index = FALSE, na = FALSE, ...) {
+  # Parse arguments
+  subset <- format_taxon_subset(names(obj$taxa), subset)
+
+  # Get supertaxa
+  parent_index <- match(obj$edge_list$from, obj$edge_list$to) # precomputing makes it much faster
+  recursive_part <- function(taxon) {
+    supertaxon <- parent_index[taxon]
+    if (recursive) {
+      if (is.na(supertaxon)) {
+        output <- c(taxon, supertaxon)
+      } else {
+        output <- c(taxon, recursive_part(supertaxon))
+      }
+    } else {
+      output <- c(taxon, supertaxon)
+    }
+    return(unname(output))
+  }
+  output <- lapply(subset, recursive_part)
+
+  # Remove query taxa from output
+  if (! include_input) {
+    output <- lapply(output, `[`, -1)
+  }
+
+  # Remove NAs from output
+  if (! na) {
+    output <- lapply(output, function(x) x[!is.na(x)])
+  }
+
+  # Convert to taxon_ids
+  if (! index) {
+    output <- lapply(output, function(x) names(obj$taxa)[x])
+  }
+
+  # Reduce dimensionality
+  if (simplify) {
+    output <- unique(unname(unlist(output)))
+  }
+
+  return(output)
 }
 
 
@@ -138,10 +138,10 @@ supertaxa.Taxonomy <- function(obj, ...) {
 #' Return the taxon IDs or indexes of all supertaxa (i.e. all taxa the target taxa
 #' are a part of) in an object of type \code{\link{taxonomy}} or \code{\link{taxmap}}.
 #' \preformatted{
-#' obj$supertaxa(subset = NULL, recursive = TRUE,
-#'               simplify = FALSE, include_input = FALSE,
-#'               index = FALSE, na = FALSE)
-#' supertaxa(obj, ...)}
+#' obj$supertaxa(...)
+#' supertaxa(obj, subset = NULL, recursive = TRUE,
+#'           simplify = FALSE, include_input = FALSE,
+#'           index = FALSE, na = FALSE)}
 #'
 #' @param obj The \code{taxonomy} or \code{taxmap} object containing taxon information to be
 #'   queried.
@@ -155,7 +155,7 @@ supertaxa.Taxonomy <- function(obj, ...) {
 #' @param index (\code{logical}) If \code{TRUE}, return the indexes of supertaxa in
 #'   \code{taxon_data} instead of \code{taxon_ids}
 #' @param na (\code{logical}) If \code{TRUE}, return \code{NA} where information is not available.
-#' @param ... Used to pass the parameters to the R6 method of \code{\link{taxonomy}}
+#' @param ... Used to pass the parameters to the S3 method of \code{\link{taxonomy}}
 #'
 #' @return If \code{simplify = FALSE}, then a list of vectors are returned corresponding to the
 #'   \code{subset} argument. If \code{simplify = TRUE}, then unique values are returned in a single
